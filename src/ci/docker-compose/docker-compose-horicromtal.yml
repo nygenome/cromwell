@@ -6,7 +6,7 @@ services:
   # Opts out of:
   # - Running the summarizer
   db-mstr:
-    image: "broadinstitute/cromwell:${CROMWELL_BUILD_CENTAUR_MANAGED_TAG}"
+    image: "nygenome/cromwell:${CROMWELL_BUILD_CENTAUR_MANAGED_TAG}"
     network_mode: host
     working_dir: ${CROMWELL_BUILD_ROOT_DIRECTORY}
     volumes:
@@ -49,7 +49,7 @@ services:
   # Makes no changes to the config file we bring in, so always summarizes, and sometimes does metadata
   # deletion things, but only if the underlying config file says that we do.
   sum-back:
-    image: "broadinstitute/cromwell:${CROMWELL_BUILD_CENTAUR_MANAGED_TAG}"
+    image: "nygenome/cromwell:${CROMWELL_BUILD_CENTAUR_MANAGED_TAG}"
     network_mode: host
     working_dir: ${CROMWELL_BUILD_ROOT_DIRECTORY}
     volumes:
@@ -93,7 +93,7 @@ services:
   # Opts out of:
   # - Running the summarizer
   front-back:
-    image: "broadinstitute/cromwell:${CROMWELL_BUILD_CENTAUR_MANAGED_TAG}"
+    image: "nygenome/cromwell:${CROMWELL_BUILD_CENTAUR_MANAGED_TAG}"
     network_mode: host
     working_dir: ${CROMWELL_BUILD_ROOT_DIRECTORY}
     volumes:
