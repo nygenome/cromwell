@@ -24,8 +24,6 @@ jobs:
         with:
           ref: ${{ inputs.target-branch }}
       - uses: ./.github/set_up_cromwell_action
-        with:
-          cromwell_repo_token: ${{ secrets.BROADBOT_GITHUB_TOKEN }}
       - name: Run ScalaFmt
         run: |
           sbt scalafmtCheckAll
