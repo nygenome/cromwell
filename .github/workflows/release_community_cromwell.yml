@@ -10,12 +10,6 @@ jobs:
     steps:
     - uses: sbt/setup-sbt@v1
 
-    # Only Cromwell admins should be permitted to run this action
-    - name: Enforce admin role
-      uses: prince-chrismc/check-actor-permissions-action@v3
-      with:
-        permission: admin
-
     - name: Find Cromwell release number
       run: |
         set -e
