@@ -16,17 +16,10 @@ jobs:
       with:
         permission: admin
 
-    # `DSDEJENKINS_PASSWORD` auto syncs from vault with https://github.com/broadinstitute/terraform-ap-deployments/pull/614
-    - name: Login to Docker Hub
-      uses: docker/login-action@v1
-      with:
-        username: dsdejenkins
-        password: ${{ secrets.DSDEJENKINS_PASSWORD }}
-
     - name: Find Cromwell release number
       run: |
         set -e
-        previous_version=$(curl -X GET https://api.github.com/repos/nygenome/cromwell/releases/latest | jq .tag_name | xargs)
+        previous_version=$(curl -X GET https://api.github.com/repos/${{ github.repository }}/releases/latest | jq .tag_name | xargs)
         if ! [[ "${previous_version}" =~ ^[0-9][0-9]+$ ]]; then
           exit 1
         fi
@@ -36,7 +29,7 @@ jobs:
     - name: Clone Cromwell
       uses: actions/checkout@v4
       with:
-        repository: nygenome/cromwell
+        repository: ${{ github.repository }}
         path: cromwell
         ref: develop
         # fetch-depth 0 tells the action to include all past commits in the checkout.
@@ -50,8 +43,8 @@ jobs:
         set -e
         cd cromwell
 
-        git config --global user.name "broadbot"
-        git config --global user.email "broadbot@broadinstitute.org"
+        git config --global user.name "gitbot"
+        git config --global user.email "gitbot@nygenome.org"
 
         echo 'Merge develop into master'
         git checkout --track origin/master
@@ -90,13 +83,6 @@ jobs:
         cd cromwell
         git push origin develop master
 
-    - name: Build and push Docker image
-      run: |
-        set -e
-        cd cromwell
-        git checkout master
-        sbt -Dproject.isSnapshot=false -Dproject.isRelease=true dockerBuildAndPush
-
     - name: Create Github release
       uses: softprops/action-gh-release@v2
       with:
@@ -105,3 +91,4 @@ jobs:
         files: |
           cromwell/server/target/scala-2.13/cromwell-${{ env.RELEASE_VERSION }}.jar
           cromwell/womtool/target/scala-2.13/womtool-${{ env.RELEASE_VERSION }}.jar
+        token: ${{ secrets.GITHUB_TOKEN }}
