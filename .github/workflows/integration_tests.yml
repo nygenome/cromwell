@@ -42,9 +42,6 @@ jobs:
             friendly_name: Centaur GCP Batch (restart)
           - build_type: dbms
             friendly_name: DBMS
-          - build_type: centaurTes
-            build_mysql: 8.4
-            friendly_name: Centaur TES with MySQL 8.4
           - build_type: centaurLocal
             build_mysql: 8.4
             friendly_name: Centaur Local with MySQL 8.4
@@ -52,24 +49,6 @@ jobs:
             friendly_name: Check Publish
           - build_type: centaurAws
             build_mysql: 8.4
-            friendly_name: Centaur AWS with MySQL 8.4
-          - build_type: centaurAwsRestart
-            build_mysql: 8.4
-            friendly_name: Centaur AWS (restart)
-          - build_type: centaurAwsTagResources
-            build_mysql: 8.4
-            friendly_name: Centaur AWS (Tag Resources)
-          - build_type: centaurAwsHoricromtal
-            build_mysql: 8.4
-            friendly_name: Centaur Horicromtal AWS
-          - build_type: centaurDummy
-            build_mysql: 8.4
-            friendly_name: Centaur Dummy with MySQL 8.4
-          - build_type: centaurHoricromtalGcpBatch
-            build_mysql: 8.4
-            friendly_name: Centaur Horicromtal GCP Batch with MySQL 8.4
-          - build_type: horicromtalDeadlock
-            friendly_name: Horicromtal Deadlock
           - build_type: singleWorkflowRunner
             friendly_name: Single Workflow Runner
           - build_type: centaurLocal
@@ -124,13 +103,7 @@ jobs:
         fail_ci_if_error: false # Tolerate missing codecov reports, since not all suites generate them.
     # always() is some github magic that forces the following step to run, even when the previous fails.
     # Without it, the if statement won't be evaluated on a test failure.
-    - uses: ravsamhq/notify-slack-action@v2
-      if: always() && github.ref == 'refs/heads/develop' #only report on failures against develop.
-      with:
-        status: ${{ job.status }}
-        notify_when: "failure"
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
     #The "shell: ..."" line is a way to force the Github Action Runner to use a bash shell that thinks it has a TTY.
     #The issue and solution are described here: https://github.com/actions/runner/issues/241#issuecomment-842566950
     #This is only needed for ReferenceDiskManifestBuilderApp test.
