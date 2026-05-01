@@ -10,16 +10,6 @@ jobs:
     steps:
     - uses: sbt/setup-sbt@v1
 
-    - name: Find Cromwell release number
-      run: |
-        set -e
-        previous_version=$(curl -X GET https://api.github.com/repos/${{ github.repository }}/releases/latest | jq .tag_name | xargs)
-        if ! [[ "${previous_version}" =~ ^[0-9][0-9]+$ ]]; then
-          previous_version=0
-        fi
-        echo "RELEASE_VERSION=$((previous_version + 1))" >> $GITHUB_ENV
-        echo "NEXT_VERSION=$((previous_version + 2))" >> $GITHUB_ENV
-
     - name: Clone Cromwell
       uses: actions/checkout@v4
       with:
@@ -31,6 +21,32 @@ jobs:
         # Without the existing commits, git doesn't understand how the branches are
         # related to each other.
         fetch-depth: 0
+
+    - name: Find Cromwell release number
+      run: |
+        set -e
+        cd cromwell
+        # Extract MAJOR version from project/Version.scala
+        VERSION_IN_SOURCE=$(grep -m 1 "cromwellVersion" project/Version.scala | sed -E 's/.*"([^"]+)".*/\1/')
+        MAJOR_VERSION=$(echo "$VERSION_IN_SOURCE" | cut -d. -f1)
+
+        # Latest release tag from GitHub
+        LATEST_TAG=$(curl -s -X GET https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r .tag_name)
+
+        if [[ "$LATEST_TAG" =~ ^$MAJOR_VERSION\.([0-9]+)$ ]]; then
+          MINOR=${BASH_REMATCH[1]}
+          RELEASE_VERSION="$MAJOR_VERSION.$((MINOR + 1))"
+          NEXT_VERSION="$MAJOR_VERSION.$((MINOR + 2))"
+        else
+          # If no previous release for this major, or latest release is a different major
+          RELEASE_VERSION="$MAJOR_VERSION.0"
+          NEXT_VERSION="$MAJOR_VERSION.1"
+        fi
+
+        echo "MAJOR_VERSION=${MAJOR_VERSION}" >> $GITHUB_ENV
+        echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
+        echo "NEXT_VERSION=${NEXT_VERSION}" >> $GITHUB_ENV
+        echo "Upstream version: $VERSION_IN_SOURCE, Major: $MAJOR_VERSION, Release: $RELEASE_VERSION, Next: $NEXT_VERSION"
 
     - name: Merge to master and rev develop
       run: |
@@ -46,7 +62,7 @@ jobs:
 
         echo "Update develop to version ${NEXT_VERSION}"
         git checkout develop
-        sed -i -e "/cromwellVersion[[:space:]]=/s/[0-9][0-9]*/${NEXT_VERSION}/" project/Version.scala
+        sed -i -e "/cromwellVersion[[:space:]]=/s/\".*\"/\"${NEXT_VERSION}\"/" project/Version.scala
         git add project/Version.scala
         git diff-index --quiet HEAD \
         || git commit --message "Update cromwell version from ${RELEASE_VERSION} to ${NEXT_VERSION}"
@@ -55,7 +71,12 @@ jobs:
       run: |
         set -e
         cd cromwell
+        # Try to find release notes for the full version (e.g., ## 92.4)
         sed -n "/## ${RELEASE_VERSION}/,/## [0-9]/p" CHANGELOG.md | sed '$d' > changelog.txt
+        # If not found, try to find release notes for the major version (e.g., ## 92)
+        if [ ! -s changelog.txt ]; then
+          sed -n "/## ${MAJOR_VERSION}/,/## [0-9]/p" CHANGELOG.md | sed '$d' > changelog.txt
+        fi
 
     - name: Build jars for new release
       run: |
