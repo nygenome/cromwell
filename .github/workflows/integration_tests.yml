@@ -78,7 +78,7 @@ jobs:
     timeout-minutes: 120
     steps:
     - uses: sbt/setup-sbt@v1
-    - uses: actions/checkout@v3 # checkout the cromwell repo
+    - uses: actions/checkout@v6 # checkout the cromwell repo
       with:
         ref: ${{ inputs.target-branch }}
     - uses: ./.github/set_up_cromwell_action #This github action will set up git-secrets, caching, java, and sbt.
