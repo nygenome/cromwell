@@ -32,7 +32,7 @@ runs:
       - name: Clone Cromwell
         uses: actions/checkout@v3
         with:
-          repository: nygenome/cromwell
+          repository: ${{ github.repository }}
 
       #Install Java to this VM. This Java version and distribution is compatible with Cromwell.
       - name: Setup JDK
