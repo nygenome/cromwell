@@ -11,7 +11,7 @@ jobs:
     - uses: sbt/setup-sbt@v1
 
     - name: Clone Cromwell
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: ${{ github.repository }}
         path: cromwell
