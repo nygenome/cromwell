@@ -45,18 +45,6 @@ jobs:
         echo "RELEASE_VERSION=${RELEASE_VERSION}" >> $GITHUB_ENV
         echo "Upstream version: $VERSION_IN_SOURCE, Major: $MAJOR_VERSION, Release: $RELEASE_VERSION"
 
-    - name: Merge develop into master
-      run: |
-        set -e
-        cd cromwell
-
-        git config --global user.name "gitbot"
-        git config --global user.email "gitbot@nygenome.org"
-
-        echo 'Merge develop into master'
-        git checkout --track origin/master
-        git merge --no-edit develop
-
     - name: Prepare release notes
       run: |
         set -e
