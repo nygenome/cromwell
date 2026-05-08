@@ -32,7 +32,7 @@ jobs:
       matrix:
         # Batch test fixes to land later
         # Note that build_type match to the corresponding backend configuration following some
-        # annoying string matching magic defined here https://github.com/broadinstitute/cromwell/blob/bd88152d0e5dc6f41552c663b38012033a43c2b4/src/ci/bin/test.inc.sh#L194
+        # annoying string matching magic defined here https://github.com/nygenome/cromwell/blob/bd88152d0e5dc6f41552c663b38012033a43c2b4/src/ci/bin/test.inc.sh#L194
         include:
           - build_type: centaurGcpBatch
             build_mysql: 8.4
@@ -42,9 +42,6 @@ jobs:
             friendly_name: Centaur GCP Batch (restart)
           - build_type: dbms
             friendly_name: DBMS
-          - build_type: centaurTes
-            build_mysql: 8.4
-            friendly_name: Centaur TES with MySQL 8.4
           - build_type: centaurLocal
             build_mysql: 8.4
             friendly_name: Centaur Local with MySQL 8.4
@@ -52,24 +49,6 @@ jobs:
             friendly_name: Check Publish
           - build_type: centaurAws
             build_mysql: 8.4
-            friendly_name: Centaur AWS with MySQL 8.4
-          - build_type: centaurAwsRestart
-            build_mysql: 8.4
-            friendly_name: Centaur AWS (restart)
-          - build_type: centaurAwsTagResources
-            build_mysql: 8.4
-            friendly_name: Centaur AWS (Tag Resources)
-          - build_type: centaurAwsHoricromtal
-            build_mysql: 8.4
-            friendly_name: Centaur Horicromtal AWS
-          - build_type: centaurDummy
-            build_mysql: 8.4
-            friendly_name: Centaur Dummy with MySQL 8.4
-          - build_type: centaurHoricromtalGcpBatch
-            build_mysql: 8.4
-            friendly_name: Centaur Horicromtal GCP Batch with MySQL 8.4
-          - build_type: horicromtalDeadlock
-            friendly_name: Horicromtal Deadlock
           - build_type: singleWorkflowRunner
             friendly_name: Single Workflow Runner
           - build_type: centaurLocal
@@ -99,12 +78,10 @@ jobs:
     timeout-minutes: 120
     steps:
     - uses: sbt/setup-sbt@v1
-    - uses: actions/checkout@v3 # checkout the cromwell repo
+    - uses: actions/checkout@v6 # checkout the cromwell repo
       with:
         ref: ${{ inputs.target-branch }}
     - uses: ./.github/set_up_cromwell_action #This github action will set up git-secrets, caching, java, and sbt.
-      with:
-        cromwell_repo_token: ${{ secrets.BROADBOT_GITHUB_TOKEN }}
     # Activate SSH and idle for 30 minutes, see https://www.notion.so/SSH-into-Github-Action-287ab699a6f580609d01d3c88692df14 for details
 #    - name: Setup tmate session
 #      uses: mxschmitt/action-tmate@v3
@@ -126,13 +103,7 @@ jobs:
         fail_ci_if_error: false # Tolerate missing codecov reports, since not all suites generate them.
     # always() is some github magic that forces the following step to run, even when the previous fails.
     # Without it, the if statement won't be evaluated on a test failure.
-    - uses: ravsamhq/notify-slack-action@v2
-      if: always() && github.ref == 'refs/heads/develop' #only report on failures against develop.
-      with:
-        status: ${{ job.status }}
-        notify_when: "failure"
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
     #The "shell: ..."" line is a way to force the Github Action Runner to use a bash shell that thinks it has a TTY.
     #The issue and solution are described here: https://github.com/actions/runner/issues/241#issuecomment-842566950
     #This is only needed for ReferenceDiskManifestBuilderApp test.

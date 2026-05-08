@@ -32,7 +32,7 @@ services:
       timeout: 30s
       retries: 15
   cromwell-master:
-    image: "broadinstitute/cromwell:${CROMWELL_BUILD_DOCKER_TAG}"
+    image: "nygenome/cromwell:${CROMWELL_BUILD_DOCKER_TAG}"
     working_dir: ${CROMWELL_BUILD_ROOT_DIRECTORY}
     volumes:
       - ${CROMWELL_BUILD_ROOT_DIRECTORY}:${CROMWELL_BUILD_ROOT_DIRECTORY}
@@ -50,7 +50,7 @@ services:
       timeout: 30s
       retries: 60
   cromwell-norefresh:
-    image: "broadinstitute/cromwell:${CROMWELL_BUILD_DOCKER_TAG}"
+    image: "nygenome/cromwell:${CROMWELL_BUILD_DOCKER_TAG}"
     working_dir: ${CROMWELL_BUILD_ROOT_DIRECTORY}
     volumes:
       - ${CROMWELL_BUILD_ROOT_DIRECTORY}:${CROMWELL_BUILD_ROOT_DIRECTORY}

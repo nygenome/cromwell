@@ -1,17 +1,13 @@
 #This is a series of steps that will setup Java/sbt/Cromwell on the local runner.
 #These steps are meant to be re-used and invoked by other Github Action Workflows
 name: 'Set Up Cromwell Steps'
-description: Specific steps that will set up git secrets, java, sbt, and Cromwell on the local machine. 
-inputs:
-  cromwell_repo_token:
-    description: "Token used to authenticate while checking out Cromwell."
-    required: true
+description: Specific steps that will set up git secrets, java, sbt, and Cromwell on the local machine.
 
 runs:
   using: "composite" # <-- this allows these steps to be used by other workflows.
   steps:
       #Allows this github action to use a cache to store stuff like Java and sbt files between runs.
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
         name: Checkout Coursier Cache
       - uses: coursier/cache-action@v6
         name: Enable Coursier Cache
@@ -34,10 +30,9 @@ runs:
 
       #Clone the cromwell repo to this VM.
       - name: Clone Cromwell
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
-          repository: broadinstitute/cromwell
-          token: ${{ inputs.cromwell_repo_token }}
+          repository: ${{ github.repository }}
 
       #Install Java to this VM. This Java version and distribution is compatible with Cromwell.
       - name: Setup JDK
