@@ -19,6 +19,7 @@ import wom.format.MemorySize
 import wom.types._
 import wom.values._
 
+import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
 
 final class GcpBatchRuntimeAttributesSpec
@@ -112,6 +113,26 @@ final class GcpBatchRuntimeAttributesSpec
       val runtimeAttributes = Map("docker" -> WomString("ubuntu:latest"), "cpu" -> WomString("2"))
       val expectedRuntimeAttributes = expectedDefaults.copy(cpu = refineMV(2))
       assertBatchRuntimeAttributesSuccessfulCreation(runtimeAttributes, expectedRuntimeAttributes)
+    }
+
+    "validate a valid jobTimeout entry (integer)" in {
+      val runtimeAttributes = Map("docker" -> WomString("ubuntu:latest"), "jobTimeout" -> WomInteger(3600))
+      val expectedRuntimeAttributes = expectedDefaults.copy(batchTimeout = Option(3600.seconds))
+      assertBatchRuntimeAttributesSuccessfulCreation(runtimeAttributes, expectedRuntimeAttributes)
+    }
+
+    "validate a valid jobTimeout entry (string)" in {
+      val runtimeAttributes = Map("docker" -> WomString("ubuntu:latest"), "jobTimeout" -> WomString("1 hour"))
+      val expectedRuntimeAttributes = expectedDefaults.copy(batchTimeout = Option(1.hour))
+      assertBatchRuntimeAttributesSuccessfulCreation(runtimeAttributes, expectedRuntimeAttributes)
+    }
+
+    "fail to validate an invalid jobTimeout entry" in {
+      val runtimeAttributes = Map("docker" -> WomString("ubuntu:latest"), "jobTimeout" -> WomString("invalid"))
+      assertBatchRuntimeAttributesFailedCreation(
+        runtimeAttributes,
+        "Expecting jobTimeout runtime attribute to be an Integer (seconds) or String with format '1 hour'."
+      )
     }
 
     "fail to validate an invalid cpu entry" in {
@@ -379,7 +400,8 @@ trait GcpBatchRuntimeAttributesSpecsMixin {
     failOnStderr = false,
     continueOnReturnCode = ContinueOnReturnCodeSet(Set(0)),
     noAddress = false,
-    checkpointFilename = None
+    checkpointFilename = None,
+    batchTimeout = None
   )
 
   def assertBatchRuntimeAttributesSuccessfulCreation(runtimeAttributes: Map[String, WomValue],

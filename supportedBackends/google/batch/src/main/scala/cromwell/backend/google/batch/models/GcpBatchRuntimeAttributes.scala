@@ -17,6 +17,8 @@ import wom.format.MemorySize
 import wom.types.{WomArrayType, WomIntegerType, WomStringType, WomType}
 import wom.values.{WomArray, WomBoolean, WomInteger, WomOptionalValue, WomString, WomValue}
 
+import scala.concurrent.duration.FiniteDuration
+
 object GpuResource {
 
   final case class GpuType(name: String) {
@@ -58,7 +60,8 @@ final case class GcpBatchRuntimeAttributes(cpu: Int Refined Positive,
                                            failOnStderr: Boolean,
                                            continueOnReturnCode: ContinueOnReturnCode,
                                            noAddress: Boolean,
-                                           checkpointFilename: Option[String]
+                                           checkpointFilename: Option[String],
+                                           batchTimeout: Option[FiniteDuration]
 )
 
 object GcpBatchRuntimeAttributes {
@@ -158,6 +161,9 @@ object GcpBatchRuntimeAttributes {
           .configDefaultWomValue(runtimeConfig) getOrElse NoAddressDefaultValue
       )
 
+  private def batchTimeoutValidation(runtimeConfig: Option[Config]): OptionalRuntimeAttributesValidation[FiniteDuration] =
+    DurationValidation.optional(RuntimeAttributesKeys.jobTimeoutKey)
+
   def runtimeAttributesBuilder(batchConfiguration: GcpBatchConfiguration): StandardValidatedRuntimeAttributesBuilder = {
     val runtimeConfig = batchConfiguration.runtimeConfig
     StandardValidatedRuntimeAttributesBuilder
@@ -176,6 +182,7 @@ object GcpBatchRuntimeAttributes {
         memoryValidation(runtimeConfig),
         bootDiskSizeValidation(runtimeConfig),
         checkpointFileValidationInstance,
+        batchTimeoutValidation(runtimeConfig),
         dockerValidation,
         containerValidation
       )
@@ -196,6 +203,10 @@ object GcpBatchRuntimeAttributes {
     )
     val checkpointFileName: Option[String] =
       RuntimeAttributesValidation.extractOption(checkpointFileValidationInstance.key, validatedRuntimeAttributes)
+    val batchTimeout: Option[FiniteDuration] =
+      RuntimeAttributesValidation.extractOption(batchTimeoutValidation(runtimeAttrsConfig).key,
+                                                validatedRuntimeAttributes
+      )
 
     // GPU
     lazy val gpuRequired: Boolean = RuntimeAttributesValidation
@@ -257,7 +268,8 @@ object GcpBatchRuntimeAttributes {
       failOnStderr = failOnStderr,
       continueOnReturnCode = continueOnReturnCode,
       noAddress = noAddress,
-      checkpointFilename = checkpointFileName
+      checkpointFilename = checkpointFileName,
+      batchTimeout = batchTimeout
     )
   }
 

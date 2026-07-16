@@ -212,7 +212,7 @@ class GcpBatchRequestFactoryImpl()(implicit gcsTransferConfiguration: GcsTransfe
     val memory = toMemMib(runtimeAttributes.memory)
 
     // Determine max runtime for Batch
-    val durationInSeconds: Long = data.gcpBatchParameters.batchAttributes.batchTimeout.toSeconds
+    val durationInSeconds: Long = createParameters.batchTimeout.toSeconds
 
     // Batch defaults to 1 task
     val taskCount: Long = 1

@@ -675,7 +675,7 @@ class GcpBatchAsyncBackendJobExecutionActor(override val standardParams: Standar
           computeServiceAccount = computeServiceAccount(jobDescriptor.workflowDescriptor),
           googleLabels = backendLabels ++ customLabels,
           preemptible = preemptible,
-          batchTimeout = batchConfiguration.batchTimeout,
+          batchTimeout = runtimeAttributes.batchTimeout.getOrElse(batchConfiguration.batchTimeout),
           jobShell = batchConfiguration.jobShell,
           privateDockerKeyAndEncryptedToken = dockerKeyAndToken,
           womOutputRuntimeExtractor = jobDescriptor.workflowDescriptor.outputRuntimeExtractor,
